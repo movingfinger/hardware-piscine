@@ -1,0 +1,376 @@
+FeatureScript 1174;
+import(path : "onshape/std/geometry.fs", version : "1174.0");
+
+annotation { "Feature Type Name" : "Sproket"}
+export const Sproket = defineFeature(function(context is Context, id is Id, definition is map)
+    precondition
+    {
+        annotation { "Name" : "Pitch circle diameter" }
+        isLength(definition.pitchCircleDiameter, LENGTH_BOUNDS);
+
+        annotation { "Name" : "Number of Teeth" }
+        isInteger(definition.N, TEETH_BOUNDS);
+        
+        annotation { "Name" : "Extrude depth" }
+        isLength(definition.gearDepth, BLEND_BOUNDS);
+                        
+        annotation { "Name" : "Seating Curve Diameter" }
+        isLength(definition.Ds, LENGTH_BOUNDS);
+    }
+    {
+        // Important Variable definitions
+        var Dr = .13 * inch;
+        var E = 1.3025 * Dr + 0.0015 * inch;
+        var M = 0.8 * Dr * cos((35 +60 / definition.N) * degree);
+        var T = 0.8 * Dr * sin((35 +60 / definition.N) * degree);
+        var angleA = (35 + 60 / definition.N) * degree;
+        var angleB = (18 - 56 / definition.N) * degree;
+        var W = 1.4 * Dr * cos((180 / definition.N) * degree);
+        var V = 1.4 * Dr * sin((180 / definition.N) * degree);
+        var F = Dr * (0.8 * cos((18 - 56 / definition.N) * degree) + 1.4 * cos((17 - 64 / definition.N) * degree) - 1.3025) - .0015 * inch;
+        
+        // Select build gear on the front plane at the origin
+        var location = vector(0, 0, 0) * inch;
+        var sketchPlane = plane(location, vector(0, -1, 0), vector(1, 0, 0));
+        
+        // create the outer diameter circle
+        const gearSketch = newSketchOnPlane(context, id + "gearSketch", {
+                "sketchPlane" : sketchPlane
+        });
+        const center = worldToPlane(sketchPlane, location);
+        skCircle(gearSketch, "outerCircle", {
+                "center" : center,
+                "radius" : definition.pitchCircleDiameter / 2
+        });
+        
+        // Select build gear on the front plane at the origin
+        var smallCircleLocation = vector(0, 0, definition.pitchCircleDiameter / (2 * inch) ) * inch;
+        
+        // create the small circle
+        const smallCircleSketch = newSketchOnPlane(context, id + "smallCircleSketch", {
+                "sketchPlane" : sketchPlane
+        });
+        const smallCirclecenter = worldToPlane(sketchPlane, smallCircleLocation);
+        skCircle(smallCircleSketch, "smallCircleTop", {
+                "center" : smallCirclecenter,
+                "radius" : definition.Ds / 2
+        });
+
+        // draw line perpendicular to center Y line and distance T above from gear circle
+        var line1Start = vector(definition.pitchCircleDiameter / (2 * inch), (definition.pitchCircleDiameter / 2 + T) / (1 * inch));
+        var line1End = vector(-definition.pitchCircleDiameter / (2 * inch), (definition.pitchCircleDiameter / 2 + T) / (1 * inch));
+        const line1Sketch = newSketchOnPlane(context, id + "line1Sketch", {
+                "sketchPlane" : sketchPlane
+        });
+        skLineSegment(line1Sketch, "line1", {
+                "start" : line1Start * inch,
+                "end" : line1End * inch
+        });
+
+        // draw line perpendicular to center Y line and tangent to gear circle
+        var line2Start = vector(M / (1 * inch), definition.pitchCircleDiameter / (1 * inch));
+        var line2End = vector(M / (1 * inch), -definition.pitchCircleDiameter / (1 * inch));
+        const line2Sketch = newSketchOnPlane(context, id + "line2Sketch", {
+                "sketchPlane" : sketchPlane
+        });
+        skLineSegment(line2Sketch, "line2", {
+                "start" : line2Start * inch,
+                "end" : line2End * inch
+        });
+
+        // draw line perpendicular to line1 and line2, and parallel to Y line, distance M from center Y line.
+        var line3Start = vector(definition.pitchCircleDiameter / (2 * inch), (definition.pitchCircleDiameter / 2) / (1 * inch));
+        var line3End = vector(-definition.pitchCircleDiameter / (2 * inch), (definition.pitchCircleDiameter / 2) / (1 * inch));
+        const line3Sketch = newSketchOnPlane(context, id + "line3Sketch", {
+                "sketchPlane" : sketchPlane
+        });
+        skLineSegment(line3Sketch, "line3", {
+                "start" : line3Start * inch,
+                "end" : line3End * inch
+        });
+
+        // draw point C
+        const pointCSketch = newSketchOnPlane(context, id + "pointCSketch", {
+                "sketchPlane" : sketchPlane
+        });
+        var pointC = vector(M / (1 * inch), (definition.pitchCircleDiameter / 2 + T) / (1 * inch));
+        skPoint(pointCSketch, "pointC", {
+                "position" : pointC * inch
+        });
+        
+        // draw point X
+        var pointX = vector(definition.Ds / (2 * inch) * cos(180 * degree + angleA), definition.pitchCircleDiameter / (2 * inch) + definition.Ds / (2 * inch) * sin(180 * degree + angleA));
+        const pointXSketch = newSketchOnPlane(context, id + "pointXSketch", {
+                "sketchPlane" : sketchPlane
+        });
+        skPoint(pointXSketch, "pointX", {
+                "position" : pointX * inch
+        });
+        
+        var pointMX = vector(-pointX[0], pointX[1]);
+        const pointMXSketch = newSketchOnPlane(context, id + "pointMXSketch", {
+        "sketchPlane" : sketchPlane
+        });
+        skPoint(pointXSketch, "pointMX", {
+                "position" : pointMX * inch
+        });
+        
+        // draw point Y
+        const pointYSketch = newSketchOnPlane(context, id + "pointYSketch", {
+                "sketchPlane" : sketchPlane
+        });
+        var pointY = vector((pointC[0] * inch + E * cos(180 * degree - angleB + angleA)) / (1 * inch), (pointC[1] * inch + E * sin(180 * degree - angleB + angleA)) / (1 * inch));
+        skPoint(pointYSketch, "pointY", {
+                "position" : pointY * inch
+        });
+        
+        // draw point XY
+        const pointXYSketch = newSketchOnPlane(context, id + "pointXYSketch", {
+                "sketchPlane" : sketchPlane
+        });
+        var pointXY = vector((pointC[0] * inch + E * cos(180 * degree - angleB / 2 + angleA)) / (1 * inch), (pointC[1] * inch + E * sin(180 * degree - angleB / 2 + angleA)) / (1 * inch));
+        skPoint(pointXYSketch, "pointXY", {
+                "position" : pointXY * inch
+        });
+        
+        // draw arc XY
+        const arcXYSketch = newSketchOnPlane(context, id + "arcXYSketch", {
+                "sketchPlane" : sketchPlane
+        });
+        skArc(arcXYSketch, "arcXY", {
+                "start" : pointX * inch,
+                "mid" : pointXY * inch,
+                "end" : pointY * inch
+        });
+        
+        // draw point Z        
+        var pointZ = vector((pointC[0] * inch - E / sin(90 * degree - angleA + angleB)) / (1 * inch), pointC[1]);
+        const pointZSketch = newSketchOnPlane(context, id + "pointZSketch", {
+        "sketchPlane" : sketchPlane
+        });
+        skPoint(pointZSketch, "pointZ", {
+           "position" : pointZ * inch
+        });
+
+        // draw lineYZ perpendicular to linecy1, and meet to line1
+        const lineYZSketch = newSketchOnPlane(context, id + "lineYZSketch", {
+                "sketchPlane" : sketchPlane
+        });
+        skLineSegment(lineYZSketch, "lineYZ", {
+                "start" : pointY * inch,
+                "end" : pointZ * inch
+        });
+
+        // draw point B to draw another circle tangent to line YZ.
+        var pointB = vector(-W / (1 * inch), (definition.pitchCircleDiameter / 2 - V) / (1 * inch));
+        const pointBSketch = newSketchOnPlane(context, id + "pointBSketch", {
+        "sketchPlane" : sketchPlane
+        });
+        skPoint(pointBSketch, "pointB", {
+           "position" : pointB * inch
+        });
+                
+        // draw left circle from center pointB and tangent to line YZ
+        var leftCircleB = vector(pointB[0], 0, pointB[1]) * inch;
+        const leftCircleBSketch = newSketchOnPlane(context, id + "leftCircleBSketch", {
+                "sketchPlane" : sketchPlane
+        });
+        const leftCircleBCenter = worldToPlane(sketchPlane, leftCircleB);
+        skCircle(leftCircleBSketch, "leftCircleB", {
+                "center" : leftCircleBCenter,
+                "radius" : F
+        });
+        
+        // draw point T to draw toothTip line.
+        var pointT = vector(definition.pitchCircleDiameter * cos((90 + 180 / definition.N) * degree) / (1 * inch), definition.pitchCircleDiameter * sin((90 + 180 / definition.N) * degree) / (1 * inch));
+        const pointTSketch = newSketchOnPlane(context, id + "pointTSketch", {
+        "sketchPlane" : sketchPlane
+        });
+        skPoint(pointTSketch, "pointT", {
+           "position" : pointT * inch
+        });
+        
+        // draw toothTip angle 180 / N degree from center Y line to left side.
+        const toothTipSketch = newSketchOnPlane(context, id + "toothTipSketch", {
+                "sketchPlane" : sketchPlane
+        });
+        skLineSegment(toothTipSketch, "toothTip", {
+                "start" : center,
+                "end" : pointT * inch
+        });
+        
+        // draw point L which is tip point of tooth tip.
+        var pointL = lineCircleIntersect((pointT[0] - pointB[0]),
+                                        (pointT[1] - pointB[1]),
+                                        (center[0] / (1 * inch) - pointB[0]),
+                                        (center[1] / (1 * inch) - pointB[1]),
+                                        F / (1 * inch),
+                                        2);    
+        const pointLSketch = newSketchOnPlane(context, id + "pointLSketch", {
+        "sketchPlane" : sketchPlane
+        });
+        pointL = vector(pointL[0] + pointB[0], pointL[1] + pointB[1]);
+        skPoint(pointLSketch, "pointL", {
+          "position" : pointL * inch
+        });
+        
+        // draw point BYZ which is tip point of tooth tip.
+        var pointBYZ = tanLineCicleIntersect((pointZ[0] - pointB[0]),
+                                        (pointZ[1] - pointB[1]),
+                                        (pointY[0] - pointB[0]),
+                                        (pointY[1] - pointB[1]),
+                                        F / (1 * inch));
+        const pointBYZSketch = newSketchOnPlane(context, id + "pointBYZSketch", {
+        "sketchPlane" : sketchPlane
+        });
+        pointBYZ = vector(pointBYZ[0] + pointB[0], pointBYZ[1] + pointB[1]);
+        skPoint(pointBYZSketch, "pointBYZ", {"position" : pointBYZ * inch});
+        
+        // draw point LBYZ
+        var pointLBYZ = midPointArc2Points(pointL, pointBYZ, pointB, F / (1 * inch));
+        const pointLBYZSketch = newSketchOnPlane(context, id + "pointLBYZSketch", {"sketchPlane" : sketchPlane});
+        pointLBYZ = vector(pointLBYZ[0], pointLBYZ[1]);
+        skPoint(pointLBYZSketch, "pointLBYZ", {"position" : pointLBYZ * inch});
+        
+        // draw arc LBYZ
+        const arcLBYZSketch = newSketchOnPlane(context, id + "arcLBYZSketch", {"sketchPlane" : sketchPlane});
+        skArc(arcLBYZSketch, "arcLBYZ", {"start" : pointL * inch,"mid" : pointLBYZ * inch,"end" : pointBYZ * inch});
+
+        // draw line BYZY
+        const lineBYZYSketch = newSketchOnPlane(context, id + "lineBYZYSketch", {"sketchPlane" : sketchPlane});
+        skLineSegment(lineBYZYSketch, "lineBYZYSketch", {"start" : pointBYZ * inch,"end" : pointY * inch});
+                
+        // draw point small circle center
+        var pointCC = vector(0, (definition.pitchCircleDiameter / 2) / (1 * inch));
+        const pointCCketch = newSketchOnPlane(context, id + "pointCCketch", {"sketchPlane" : sketchPlane});
+        skPoint(pointCCketch, "pointX", {"position" : pointCC * inch});
+        
+        // draw point bottom small circle
+        var pointCB = vector(0, (definition.pitchCircleDiameter / 2 - definition.Ds / 2) / (1 * inch));
+        const pointCBketch = newSketchOnPlane(context, id + "pointCBketch", {"sketchPlane" : sketchPlane});
+        skPoint(pointCBketch, "pointX", {"position" : pointCB * inch});
+        
+        // draw arc XMX
+        const arcXMXSketch = newSketchOnPlane(context, id + "arcXMXSketch", {"sketchPlane" : sketchPlane});
+        skArc(arcXMXSketch, "arcXMX", {"start" : pointX * inch,"mid" : pointCB * inch,"end" : pointMX * inch});
+        
+        // draw arc MXY
+        const arcMXYSketch = newSketchOnPlane(context, id + "arcMXYSketch", {"sketchPlane" : sketchPlane});
+        skArc(arcMXYSketch, "arcMXY", {
+                "start" : vector(-pointX[0], pointX[1]) * inch,
+                "mid" : vector(-pointXY[0], pointXY[1]) * inch,
+                "end" : vector(-pointY[0], pointY[1]) * inch});
+        
+        // draw line BYZY
+        const lineMBYZYSketch = newSketchOnPlane(context, id + "lineMBYZYSketch", {"sketchPlane" : sketchPlane});
+        skLineSegment(lineMBYZYSketch, "lineMBYZYSketch", {
+            "start" : vector(-pointBYZ[0], pointBYZ[1]) * inch,
+            "end" : vector(-pointY[0], pointY[1]) * inch});
+        
+        // draw arc MLBYZ
+        const arcMLBYZSketch = newSketchOnPlane(context, id + "arcMLBYZSketch", {"sketchPlane" : sketchPlane});
+        skArc(arcMLBYZSketch, "arcMLBYZ", {
+                "start" : vector(-pointL[0], pointL[1]) * inch,
+                "mid" : vector(-pointLBYZ[0], pointLBYZ[1]) * inch,
+                "end" : vector(-pointBYZ[0], pointBYZ[1]) * inch});
+        skSolve(gearSketch);
+        // skSolve(smallCircleSketch);
+        // skSolve(line1Sketch);
+        // skSolve(line2Sketch);
+        // skSolve(line3Sketch);
+        // skSolve(pointCSketch);
+        // skSolve(pointXSketch);          // #6 point
+        // skSolve(pointYSketch);          // #4 point
+        // skSolve(pointXYSketch);         // #5 point
+        skSolve(arcXYSketch);           // #3 arc
+        // skSolve(pointZSketch);
+        // skSolve(lineYZSketch);
+        // skSolve(pointBSketch);
+        // skSolve(leftCircleBSketch);
+        // skSolve(pointTSketch);
+        // skSolve(toothTipSketch);
+        // skSolve(pointLSketch);          // #1 point
+        // skSolve(pointBYZSketch);        // #3 point
+        // skSolve(pointLBYZSketch);       // #2 point
+        skSolve(arcLBYZSketch);         // #1 arc
+        skSolve(lineBYZYSketch);        // #2 line
+        // skSolve(pointCBketch);          // #7 point
+        skSolve(pointCCketch);
+        // skSolve(pointMXSketch);         // #6 point
+        skSolve(arcXMXSketch);          // #4 arc
+        skSolve(arcMXYSketch);          // #5 arc
+        skSolve(lineMBYZYSketch);       // #6 line
+        skSolve(arcMLBYZSketch);        // #7 arc
+        
+
+        // opExtrude(context, id + "extrude1", {
+        //         "entities" : qSketchRegion(id + "gearSketch", true),
+        //         "direction" : sketchPlane.normal,
+        //         "endBound" : BoundingType.BLIND,
+        //         "endDepth" : definition.gearDepth
+        // });
+    });
+    
+export  function lineCircleIntersect(x1, y1, x2, y2, r, secant)
+{
+    var dx = x2 - x1;
+    var dy = y2 - y1;
+    var dr = sqrt(dx ^ 2 + dy ^ 2);
+    var D = x1 * y2 - x2 * y1;
+    var x;
+    var y;
+    if (secant == 1)
+    {
+        x = (D * dy - (dy < 0 ? -1 : 1) * dx * sqrt(r ^ 2 * dr ^ 2 - D ^ 2)) / dr ^ 2;
+        y = (-D * dx - (dy < 0 ? -dy : dy) * sqrt(r ^ 2 * dr ^ 2 - D ^ 2)) / dr ^ 2;
+    }
+    else
+    {
+        x = (D * dy + (dy < 0 ? -1 : 1) * dx * sqrt(r ^ 2 * dr ^ 2 - D ^ 2)) / dr ^ 2;
+        y = (-D * dx + (dy < 0 ? -dy : dy) * sqrt(r ^ 2 * dr ^ 2 - D ^ 2)) / dr ^ 2;
+    }   
+    return ([x, y]);
+}
+
+export  function tanLineCicleIntersect(x1, y1, x2, y2, r)
+{
+    var dx = x2 - x1;
+    var dy = y2 - y1;
+    var dr = sqrt(dx ^ 2 + dy ^ 2);
+    var D = x1 * y2 - x2 * y1;
+    var x = 1;
+    var y = 1;
+    x = D * dy / dr ^ 2;
+    y = -D * dx / dr ^ 2;
+    return ([x, y]);
+}
+
+export  function midPointArc2Points(p1, p2, c, r)
+{
+    var px = vector(p1[0] - c[0], p1[1] - c[1]);
+    var py = vector(p2[0] - c[0], p2[1] - c[1]);
+    var theta = atan2(px[1] + py[1], px[0] + py[0]);
+    var x = (c[0] + r * cos(theta));
+    var y = (c[1] + r * sin(theta));
+    return ([x, y]);
+}
+
+const TEETH_BOUNDS =
+{
+    (unitless) : [5, 30, 250]
+} as IntegerBoundSpec;
+
+
+
+
+
+/*
+// skArc(arcLBYZSketch, "arcLBYZ0", {
+//         "start" : vector(-pointL[0], pointL[1]) * inch,
+//         "mid" : vector(-pointLBYZ[0], pointLBYZ[1]) * inch,
+//         "end" : vector(-pointBYZ[0], pointBYZ[1]) * inch
+// });
+// line(vector(0,0,0), vector(0,0,1));
+// res = rotationAround(line, i(N));
+// newpoiint = oldpoint * res;
+*/
