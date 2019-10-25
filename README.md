@@ -1,8 +1,8 @@
 Design sproket using OnShape online tool by Feature Script.
 
-Most of the specification of sproket data is from 
+Most of the specification of sproket data is from<br>
 [http://www.gearseds.com/files/design_draw_sprocket_5.pdf](http://www.gearseds.com/files/design_draw_sprocket_5.pdf)
- and
+<br>and<br>
 [https://www.biwinc.net/files/2015/07/SPROCKET-ENGINEERING-DATA-2.pdf](https://www.biwinc.net/files/2015/07/SPROCKET-ENGINEERING-DATA-2.pdf)
 
 Here is my document from Onshape.io
