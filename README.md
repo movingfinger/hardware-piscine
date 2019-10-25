@@ -5,6 +5,10 @@ Most of the specification of sproket data is from<br>
 <br>and<br>
 [https://www.biwinc.net/files/2015/07/SPROCKET-ENGINEERING-DATA-2.pdf](https://www.biwinc.net/files/2015/07/SPROCKET-ENGINEERING-DATA-2.pdf)
 
+There is 2 options to create sproket,
+1. select the plane, and it will create sproket on the center of the plane.
+2. select the plane, and point to draw the sproket, and the sproket will be drawn on the point of selected plane.
+
 Here is my document from Onshape.io
 [Document](https://cad.onshape.com/documents/5de8c1d4aaaa7679e650c0e3/w/e775e409240ddd70aad42b4a/e/46e28fe1c57f4ec2b0b9253f)
 
