@@ -1,3 +1,3 @@
 Design sproket using OnShape online tool by Feature Script
 
-![My image](github.com/movingfinger/hardware-piscine/FS_image.png)
+![github-small](https://github.com/movingfinger/hardware-piscine/blob/master/FS_image.png)
