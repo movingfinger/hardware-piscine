@@ -1,8 +1,7 @@
 Design sprocket using OnShape online tool by Feature Script.
 
 Most of the specification of sprocket data is from<br>
-[http://www.gearseds.com/files/design_draw_sprocket_5.pdf](http://www.gearseds.com/files/design_draw_sprocket_5.pdf)
-<br>and<br>
+[http://www.gearseds.com/files/design_draw_sprocket_5.pdf](http://www.gearseds.com/files/design_draw_sprocket_5.pdf)<br>
 [https://www.biwinc.net/files/2015/07/SPROCKET-ENGINEERING-DATA-2.pdf](https://www.biwinc.net/files/2015/07/SPROCKET-ENGINEERING-DATA-2.pdf)
 
 There is 2 options to create sprocket,
