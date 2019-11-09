@@ -1,0 +1,506 @@
+FeatureScript 1174;
+import(path : "onshape/std/geometry.fs", version : "1174.0");
+
+annotation { "Feature Type Name" : "Sprocket"}
+
+/********************************************** Code Usage **********************************************
+**  This code is for modeling 3D sprocket.                                                             **
+**  I recommend you to read this pdf, http://www.gearseds.com/files/design_draw_sprocket_5.pdf.        **
+**  before using this code. It explains how to draw the point, lines with calculatoin and estimations. **
+**  If you want to see more information about functions you can put the mouse cursor                   **
+**  on the function name you want to check, then detailed description will be poping up.               **
+**                                                                                                     **
+**  This code is divided to 8 sections,                                                                **
+**  1. User input area.                                                                                **
+**  2. Function description                                                                            **
+**  3. Additional information for sprocket specification.                                              **
+**  4. Limits for user input                                                                           **
+********************************************************************************************************/
+
+/********************** [1] User input area ******************
+**  anonotation  : Set the display string for input values. **
+**  definition.A : Returns the input value to definition.A. **
+*************************************************************/
+
+export const Sproket = defineFeature(function(context is Context, id is Id, definition is map)
+    precondition
+    {
+        annotation { "Name" : "Select point from plane" }
+        definition.centerPoint is boolean;
+        
+        // We can choose Only one plane.
+        annotation { "Name" : "Plane", "Filter" : EntityType.FACE, "MaxNumberOfPicks" : 1 }
+        definition.SelectedPlane is Query;
+
+        // If option for select point is enabled, receive the selected point and return to definition.center.
+        if (definition.centerPoint == true)
+        {
+            annotation { "Name" : "Sketch vertex for center", "Filter" : EntityType.VERTEX && SketchObject.YES, "MaxNumberOfPicks" : 1 }
+            definition.center is Query;
+        }
+
+        annotation { "Name" : "Chain Number"}
+        definition.chainNum is chainNum;
+        
+        annotation { "Name" : "Number of Teeth" }
+        isInteger(definition.N, TEETH_BOUNDS);
+        
+        annotation { "Name" : "Center Hole Radius" }
+        isLength(definition.Bore, BORE_BOUNDS);
+        
+        annotation { "Name" : "Depth" }
+        isLength(definition.depth, DEPTH_BOUNDS);
+    }
+    {
+        var geometry = defineGeometryAndPlane(context, definition);
+        
+        var pts = definePointsAndSketch(context, geometry, id, definition);
+        
+        draw2DSprocket(pts, geometry);
+        
+        model3DSprocket(context, id, definition, geometry);
+    });
+
+/********************** [2] Funtion description *******************
+** Helper functions to find specific points with Arc and Circle. **
+******************************************************************/
+
+/**
+**  Find intersection points from line and circle, 
+**  @param p1, p2: points from line. p1 is start point adn p2 is end point.
+**  @param c     : circle center
+**  @param r     : circle radius
+**  @param inter : options for intersection points
+**      inter = 0 : one intersection
+**      inter = 1 : two intersection, 1st point which is near to start point, p1.
+**      inter = 2 : two intersection, 2nd point which is near to end poitn , p2.
+**  @return 2D vector point which represnts intersection point.
+**  If you want to see more formular explanation, visit "http://mathworld.wolfram.com/Circle-LineIntersection.html".
+**/
+
+export  function lineCircleIntersect(p1, p2, c, r, inter)
+{
+    var pt1 = vector(p1[0] - c[0], p1[1] - c[1]);
+    var pt2 = vector(p2[0] - c[0], p2[1] - c[1]);
+    var dx = pt2[0] - pt1[0];
+    var dy = pt2[1] - pt1[1];
+    var dr = sqrt(dx ^ 2 + dy ^ 2);
+    var D = pt1[0] * pt2[1] - pt2[0] * pt1[1];
+    var x = 1;
+    var y = 1;
+    if (inter == 0)
+    {
+        x = c[0] + D * dy / dr ^ 2;
+        y = c[1] - D * dx / dr ^ 2;
+    }
+    else if (inter == 1)
+    {
+        x = c[0] + (D * dy - (dy < 0 ? -1 : 1) * dx * sqrt(r ^ 2 * dr ^ 2 - D ^ 2)) / dr ^ 2;
+        y = c[1] + (-D * dx - (dy < 0 ? -dy : dy) * sqrt(r ^ 2 * dr ^ 2 - D ^ 2)) / dr ^ 2;
+    }
+    else if (inter == 2)
+    {
+        x = c[0] + (D * dy + (dy < 0 ? -1 : 1) * dx * sqrt(r ^ 2 * dr ^ 2 - D ^ 2)) / dr ^ 2;
+        y = c[1] + (-D * dx + (dy < 0 ? -dy : dy) * sqrt(r ^ 2 * dr ^ 2 - D ^ 2)) / dr ^ 2;
+    }
+    return ([x, y]);
+}
+
+/**
+**  Find mid point from arc generated by 2 points.
+**  @param p1, p2: points from line, p1 is start point and p2 is end point.
+**  @param c         : circle center
+**  @param r         : circle radius
+**  @return [(x, y)] : 2D vector point which represnts middle point x, y.
+**/
+
+export  function midPointArc2Points(p1, p2, c, r)
+{
+    var px = vector(p1[0] - c[0], p1[1] - c[1]);
+    var py = vector(p2[0] - c[0], p2[1] - c[1]);
+    var theta = atan2(px[1] + py[1], px[0] + py[0]);
+    var x = (c[0] + r * cos(theta));
+    var y = (c[1] + r * sin(theta));
+    return ([x, y]);
+}
+
+/**
+**  Defines all geometry for making points and lines.
+**  @param context    : context for modeling data. 
+**  @param definition : definition from user input.
+**  @return geometry : map variable which contains all necessary geometry and plane.
+**/
+
+export function defineGeometryAndPlane(context, definition)
+{
+    /*
+    **  All geometry are listed in "http://www.gearseds.com/files/design_draw_sprocket_5.pdf",
+    **  table 1 from page 2.
+    **  P       : Chain Pitch
+    **  PD      : Pitch Circle diameter
+    **  Dr      : Roller Diameter
+    **  Ds      : Seating curve diameter
+    **  E       : Arc XY's radius
+    **  M       : horizontal translation value to determine the point C
+    **  T       : vertical translation value to determin the point C
+    **  Angle A : for drawing line CX.
+    **  Angle B : angle from arc XY from point C.
+    **  W       : horizontal translation value to determine point B for generating third Cirle, which is green colored in pdf.
+    **  V       : vertical translation value to determine point B for generating third Circle.
+    **  F       : radius for third Circle from point B.
+    */
+    var geometry = {};
+    geometry.P = ChainSpec[definition.chainNum].P;
+    geometry.PD = geometry.P / sin((180 / definition.N) * degree) * inch;
+    geometry.Dr = ChainSpec[definition.chainNum].Dr * inch;
+    geometry.Ds = 1.0005 * geometry.Dr + .003 * inch;
+    geometry.E = 1.3025 * geometry.Dr + 0.0015 * inch;
+    geometry.M = 0.8 * geometry.Dr * cos((35 +60 / definition.N) * degree);
+    geometry.T = 0.8 * geometry.Dr * sin((35 +60 / definition.N) * degree);
+    geometry.angleA = (35 + 60 / definition.N) * degree;
+    geometry.angleB = (18 - 56 / definition.N) * degree;
+    geometry.W = 1.4 * geometry.Dr * cos((180 / definition.N) * degree);
+    geometry.V = 1.4 * geometry.Dr * sin((180 / definition.N) * degree);
+    geometry.F = geometry.Dr * (0.8 * cos((18 - 56 / definition.N) * degree) + 1.4 * cos((17 - 64 / definition.N) * degree) - 1.3025) - .0015 * inch;
+
+    /*
+    **  Define axis for rotating the lines and arcs. The reason why we select xz line
+    **  is that we need to draw the sprocket on xy plane, "2D plane", and z is on the
+    **  other dimension, which horizontal to xy plane.
+    */
+    
+    geometry.axis = line(vector(0, 0, 0) * inch, vector(0, 0, 1));
+    // full defines 360 degree angle.
+    geometry.full = 360 * degree;
+    // number of teeth
+    geometry.N = definition.N;
+    
+    geometry.plane = definePlane(context, definition);
+    return (geometry);
+}
+
+/**
+**  Defines plane and plane origin for drawing 2D sprocket
+**  @param context    : context for modeling data. 
+**  @param definition : definition from user input.
+**  @return plane     : map variable to store plane as "pn", and "p"o is plane origin.
+**/
+
+export function definePlane(context, definition)
+{
+    // Define plane is selected plane from user input.
+    var plane = evPlane(context, {
+        "face" : definition.SelectedPlane
+        });
+        
+    /*
+    **  If select point option is disabled, build sprocket on the selected plane's center point.
+    **  If select point option is enabled, select the designated point from selected plane and build
+    **  the gear on the selected point of selected plane.
+    */  
+    
+    if (definition.centerPoint == true)
+    {
+        // If select point option is enabled and plane is selected, but no point is selected, then error shows up.
+        // You need to select the point which are from selected plane.
+        if (isPointOnPlane(evVertexPoint(context, { "vertex" : definition.center }), evPlane(context, { "face" : definition.SelectedPlane })) == false)
+            throw regenError("no Point on plane", ["centerpoint"]);
+        // Set the selected point as selected plane's center point.
+        plane.origin += evVertexPoint(context, { "vertex" : definition.center }) - plane.origin;
+    }
+    return ({"pn" : plane, "po" : plane.origin});
+}
+
+/**
+**  Defines all points and sketch to draw 2D sprocket.
+**  @param context    : context for modeling data.
+**  @param geometry  : map variable which contains all necessary geometry and plane.
+**  @param id         : id for each operatoins.
+**  @param definition : definition from user input.
+**/
+
+export function definePointsAndSketch(context, geometry, id, definition)
+{
+    /*
+    **  All points, lines, and arcs are drawn on pdf, "http://www.gearseds.com/files/design_draw_sprocket_5.pdf"  **
+    **  images from page 4 ~ page 10.                                                                             **
+    */
+    
+    var pts = {};
+    // gearSketch is the sketch plane we will draw the sprocket.
+    pts.gearSketch = newSketchOnPlane(context, id + "gearSketch", {"sketchPlane" : geometry.plane.pn});        
+    // center is the selected point if user select the point option. Otherwise, it will be the center point of the selected plane.
+    pts.center = worldToPlane(geometry.plane.pn, geometry.plane.po);      
+
+    /*
+    **  point C, pointX, pointY and point XY are defined on bottom image from page 5.
+    **  point B is defined on bottom image from page 7.
+    **  point T and point L are defined on image from page 9.
+    **  point BYZ and LBYZ are defined on image from page 10.
+    **  point CB and pointMX are defined on top image from page 12.
+    */
+    
+    pts.pointC = vector(geometry.M / (1 * inch), (geometry.PD / 2 + geometry.T) / (1 * inch), 1);
+    pts.pointX = vector(geometry.Ds / (2 * inch) * cos(180 * degree + geometry.angleA), geometry.PD / (2 * inch) + geometry.Ds / (2 * inch) * sin(180 * degree + geometry.angleA));
+    pts.pointY = vector((pts.pointC[0] * inch + geometry.E * cos(180 * degree - geometry.angleB + geometry.angleA)) / (1 * inch), (pts.pointC[1] * inch + geometry.E * sin(180 * degree - geometry.angleB + geometry.angleA)) / (1 * inch));
+    // point XY is middle point from line XY.
+    pts.pointXY = vector((pts.pointC[0] * inch + geometry.E * cos(180 * degree - geometry.angleB / 2 + geometry.angleA)) / (1 * inch), (pts.pointC[1] * inch + geometry.E * sin(180 * degree - geometry.angleB / 2 + geometry.angleA)) / (1 * inch));
+    pts.pointZ = vector((pts.pointC[0] * inch - geometry.E / sin(90 * degree - geometry.angleA + geometry.angleB)) / (1 * inch), pts.pointC[1]);
+    pts.pointB = vector(-geometry.W / (1 * inch), (geometry.PD / 2 - geometry.V) / (1 * inch));
+    pts.pointT = vector((geometry.PD * cos((90 + 180 / definition.N) * degree)) / (1 * inch), (geometry.PD * sin((90 + 180 / definition.N) * degree)) / (1 * inch));
+    // point L is end point of Tooth Tip line, and start point is center.
+    pts.pointL = lineCircleIntersect(pts.pointT, pts.center / (1 * inch), pts.pointB, geometry.F / (1 * inch), 2);
+    // Set the point L as 2D vector. We need this step because our drawing is 2D sketch first.
+    pts.pointL = vector(pts.pointL[0], pts.pointL[1]);
+    // point BYZ is intersection point from line YZ and circle which center point is b with radius F.
+    pts.pointBYZ = lineCircleIntersect(pts.pointZ, pts.pointY, pts.pointB, geometry.F / (1 * inch), 0);
+    // Set the pointBYZ as 2D vector.
+    pts.pointBYZ = vector(pts.pointBYZ[0], pts.pointBYZ[1]);
+    // point LBYZ middle point from arc formed by point L and point BYZ
+    pts.pointLBYZ = midPointArc2Points(pts.pointL, pts.pointBYZ, pts.pointB, geometry.F / (1 * inch));
+    // Set the poinLBYZ as 2D vector.
+    pts.pointLBYZ = vector(pts.pointLBYZ[0], pts.pointLBYZ[1]);
+    // pointCB is bottom point from sitting curve circle.
+    pts.pointCB = vector(0, (geometry.PD / 2 - geometry.Ds / 2) / (1 * inch));
+    // point MX is the mirror point of point X by vertical axis from selected plane. 
+    pts.pointMX = vector(-pts.pointX[0], pts.pointX[1]);
+
+    /*
+    **  We need to convert all our point from 2D vector as 3D vectors due to using rotatoinAround functions.
+    **  It will construct arcs and lines as 3D vectors.
+    **  ex) pointX3D is 3D vector from pointX.
+    */
+    
+    pts.pointX3D = vector(pts.pointX[0], pts.pointX[1], 0) * inch;
+    pts.pointXY3D = vector(pts.pointXY[0], pts.pointXY[1], 0) * inch;
+    pts.pointY3D = vector(pts.pointY[0], pts.pointY[1], 0) * inch;
+    pts.pointL3D = vector(pts.pointL[0], pts.pointL[1], 0) * inch;
+    pts.pointLBYZ3D = vector(pts.pointLBYZ[0], pts.pointLBYZ[1], 0) * inch;
+    pts.pointBYZ3D = vector(pts.pointBYZ[0], pts.pointBYZ[1], 0) * inch;
+    pts.pointCB3D = vector(pts.pointCB[0], pts.pointCB[1], 0) * inch;
+    pts.pointMX3D = vector(pts.pointMX[0], pts.pointMX[1], 0) * inch;
+    
+    // make 3D vector point array to input to draSprocket function.
+    pts.p = [pts.pointX3D, pts.pointY3D, pts.pointXY3D, pts.pointL3D, pts.pointLBYZ3D, pts.pointBYZ3D, pts.pointCB3D, pts.pointMX3D];
+    return ({"points" : pts, "sketch" : pts.gearSketch});
+}
+
+/**
+**  Draw full 2D sprocket. We need to rotate and keep drawing this line
+**  sets by number of teeth to draw full sprocket using for loop.
+**  @param pts        : map variable to store all necessary points as "points" and sketch as "sketch".
+**  @param geometry  : map variable which contains all necessary geometry and plane.
+**/
+
+export function draw2DSprocket(pts, geometry)
+{        
+    /*
+    **  Labels for arcs and lines. The numbers after arc and line means the order
+    **  of drawing. 1 is drawn 1st, and 7 is drawn 7th, last.
+    **  ex)arc1 is 1st arc label and line5 is 5th line label.
+    */
+        
+    var stringLines = ["arc1", "arc2", "line3", "arc4", "line5", "arc6", "arc7"];
+    
+    for (var i = 0; i < geometry.N; i += 1)
+    {        
+        drawOneTooth(pts, geometry, i, stringLines);
+    }
+    
+    // Solve the gear sketch.
+    // Function skSolve solves any contraints from 2D drawing.
+    skSolve(pts.sketch);
+}
+
+/**
+**  Draw 5 lines and 2 arcs for one tooth of sprocket.
+**  @param pts         : map variable to store all necessary points as "points" and sketch as "sketch".
+**  @param geometry   : map variable which contains all necessary geometry and plane.
+**  @param i           : index for loop,
+**  @param stringLines : string arrays for labeling lines and arcs.
+**/
+
+export function drawOneTooth(pts, geometry, i, stringLines)
+{
+    var angle = geometry.full * (i / geometry.N);
+    var rot = rotationAround(geometry.axis, angle);
+    
+    /*
+    **  Find all points applied by rotation matrix.
+    **  P[0] = pointX3D
+    **  p[1] = pointY3D
+    **  p[2] = pointXY3D
+    **  p[3] = pointL3D
+    **  p[4] = pointLBYZ3D
+    **  p[5] = pointBYZ3D
+    **  p[6] = pointCB3D
+    **  p[7] = pointMX3D]
+    **  ex) rX means, p[0], "pointX" is rotated by rot rotation matrix. 
+    */
+        
+    const rX = rot * pts.points.p[0];
+    const rY = rot * pts.points.p[1];
+    const rXY = rot * pts.points.p[2];
+    const rL = rot * pts.points.p[3];
+    const rLBYZ = rot * pts.points.p[4];
+    const rBYZ = rot * pts.points.p[5];
+    const rCB = rot * pts.points.p[6];
+    const rMX = rot * pts.points.p[7];
+                     
+    /*
+    **  Function skArc draws arc from start point to end point crossing mid point.
+    **  Function skLineSegment draws straight line from start point to end point.
+    */
+    
+    skArc(pts.sketch, stringLines[0] ~ i, {
+            "start" : vector(rX[0], rX[1]),
+            "mid" : vector(rXY[0], rXY[1]),
+            "end" : vector(rY[0], rY[1])
+    });
+    
+    skArc(pts.sketch, stringLines[1] ~ i, {
+            "start" : vector(rL[0], rL[1]),
+            "mid" : vector(rLBYZ[0], rLBYZ[1]),
+            "end" : vector(rBYZ[0], rBYZ[1])
+    });
+    
+    skLineSegment(pts.sketch, stringLines[2] ~ i, {
+        "start" : vector(rBYZ[0], rBYZ[1]),
+        "end" : vector(rY[0], rY[1])
+    });
+    
+    skArc(pts.sketch, stringLines[3] ~ i, {
+            "start" : vector(rX[0], rX[1]),
+            "mid" : vector(rCB[0], rCB[1]),
+            "end" : vector(rMX[0], rMX[1])});
+    
+    // For next 2 arc and line drawing, I used negative vecter x.
+    // The reason why first vector x is negative is that this is mirrored point by vertical axis. 
+    skArc(pts.sketch, stringLines[4] ~ i, {
+            "start" : vector(-rX[0], rX[1]),
+            "mid" : vector(-rXY[0], rXY[1]),
+            "end" : vector(-rY[0], rY[1])});
+    
+    skLineSegment(pts.sketch, stringLines[5] ~ i, {
+        "start" : vector(-rBYZ[0], rBYZ[1]),
+        "end" : vector(-rY[0], rY[1])});
+    
+    skArc(pts.sketch, stringLines[6] ~ i, {
+            "start" : vector(-rL[0], rL[1]),
+            "mid" : vector(-rLBYZ[0], rLBYZ[1]),
+            "end" : vector(-rBYZ[0], rBYZ[1])});   
+}
+
+/**
+**  3D modeling based on 2D sprocket Drawing.
+**  @param context    : context for modeling data.
+**  @param id         : id for each operatoins.
+**  @param definition : definition from user input.
+**  @param geometry  : map variable which contains all necessary geometry and plane.
+**/
+
+export function model3DSprocket(context, id, definition, geometry)
+{
+    // Make 3D model of sprocket without center hole.
+    opExtrude(context, id + "extrude1", {
+            "entities" : qSketchRegion(id + "gearSketch", true),
+            "direction" : geometry.plane.pn.normal,
+            "endBound" : BoundingType.BLIND,
+            "endDepth" : definition.depth
+    });
+    
+    // If center hole radius (bore) is negative or bigger than Pitch circle radius substracted by Roller Diameter, displays error message.
+    if (definition.Bore < 0  || definition.Bore > (geometry.PD / 2) - geometry.Dr)
+        throw regenError("Center hole size is invalid", ["Bore"]);
+        
+    // If center hole radius is valid, draw center hole.
+    if (definition.Bore > 0)
+    {
+        // Define center hole sketch to draw the 2D image of center hole.
+        var CHsketch = newSketchOnPlane(context, id + "CHsketch", { "sketchPlane" : geometry.plane.pn });
+        skCircle(CHsketch, "circleBore", {
+            "center" : vector(0, 0) * inch,
+            "radius" : definition.Bore});
+        // solving for cente hole sketch.
+        skSolve(CHsketch);
+        
+        /*
+        **  Center hole should be empty, so use remove operation option to remove
+        **  the center hole portion from sprocket 3D modeling.
+        */
+        
+        extrude(context, id + "extrudeBore", {
+            "entities" : qSketchRegion(id + "CHsketch"),
+            "endBound" : BoundingType.BLIND,
+            "depth" : definition.depth,
+            "defaultScope" : false,
+            "booleanScope" : qCreatedBy(id + "extrude1", EntityType.BODY),
+            "operationType" : NewBodyOperationType.REMOVE,
+            "oppositeDirection" : definition.DirectionalExtrude });
+    }
+}
+
+/**************************************** [3] Additional information for sprocket specification *********************************************
+**  Valid numbers for sprocket listed on table from page 6, https://www.biwinc.net/files/2015/07/SPROCKET-ENGINEERING-DATA-2.pdf           **
+**  Specifications for various sprocket listed on table from page 5, https://www.biwinc.net/files/2015/07/SPROCKET-ENGINEERING-DATA-2.pdf  **
+********************************************************************************************************************************************/
+
+export enum chainNum
+{
+    annotation { "Name" : "#25" } n25,
+    annotation { "Name" : "#35" } n35,
+    annotation { "Name" : "#40" } n40,
+    annotation { "Name" : "#41" } n41,
+    annotation { "Name" : "#50" } n50,
+    annotation { "Name" : "#60" } n60,
+    annotation { "Name" : "#80" } n80,
+    annotation { "Name" : "#100" } n100,
+    annotation { "Name" : "#120" } n120,
+    annotation { "Name" : "#140" } n140,
+    annotation { "Name" : "#160" } n160,
+    annotation { "Name" : "#180" } n180,
+    annotation { "Name" : "#200" } n200,
+    annotation { "Name" : "#240" } n240
+}
+
+export const ChainSpec =
+{
+  chainNum.n25 : {P : 1 / 4, Dr : 0.130},
+  chainNum.n35 : {P : 3 / 8, Dr : 0.200},
+  chainNum.n40 : {P : 1 / 2, Dr : 0.306},
+  chainNum.n41 : {P : 1 / 2, Dr : 0.312},
+  chainNum.n50 : {P : 5 / 8, Dr : 0.400},
+  chainNum.n60 : {P : 3 / 4, Dr : 0.469},
+  chainNum.n80 : {P : 1, Dr : 0.625},
+  chainNum.n100 : {P : 1 + 1 / 4, Dr : 0.750},
+  chainNum.n120 : {P : 1 + 1 / 2, Dr : 0.875},
+  chainNum.n140 : {P : 1 + 3 / 4, Dr : 1},
+  chainNum.n160 : {P : 2, Dr : 1.125},
+  chainNum.n180 : {P : 2 + 1 / 4, Dr : 1.406},
+  chainNum.n200 : {P : 2 + 1 / 2, Dr : 1.562},
+  chainNum.n240 : {P : 3, Dr : 1.875}
+};
+
+/******************************* [4] Limits for user input *******************************
+**  (unitless) : this is just number, without any unit and comes with IntegerBoundSpec. **
+**  (inch)     : this input unit is inch and comes with LengthBoundSpec.                **
+**  [D, MIN, MAX]  : D is default value, MIN is minimum bound and MAX is maximum bound. **
+*****************************************************************************************/
+
+// Bound for number of teeth.
+const TEETH_BOUNDS =
+{
+    (unitless) : [5, 30, 250]
+} as IntegerBoundSpec;
+
+// Bound for center hole radius.
+const BORE_BOUNDS =
+{
+    (inch) : [0, .1, 20]
+} as LengthBoundSpec;
+
+// Bound for sprocket depth.
+const DEPTH_BOUNDS =
+{
+    (inch) : [.01, .13, 10]    
+} as LengthBoundSpec;
