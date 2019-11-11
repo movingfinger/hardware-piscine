@@ -1,36 +1,27 @@
 ///////////////////////////////////////////////////////////////// SPRAY ///////////////////////////////////////////////////////
 void spray() {
 
-  int encZ = MiddleMotorEnc.read();
-  
-  EEPROM.write(spray_address, 1);
-  while(encZ > -1450)
-  {
+//    EEPROM.write(sprayStatusCacheAddr, 1);  
     analogWrite(ZMOTOR_A_Output, SRPAY_MAX_VOLTAGE);
     analogWrite(ZMOTOR_B_Output, 0);
-    encZ = MiddleMotorEnc.read();  
-  }
+    
+    delay(spraySwitchDistance);
     
     analogWrite(ZMOTOR_A_Output, 0);
     analogWrite(ZMOTOR_B_Output, 0);
-    Serial.print(MiddleMotorEnc.read());
-    Serial.print(","); 
 }
 
 int stopSpraying() {
-  int encZ = MiddleMotorEnc.read();
-      
-  EEPROM.write(spray_address, 0);
-  while (encZ < 0)
-  {
+
+//    EEPROM.write(sprayStatusCacheAddr, 0);  
     analogWrite(ZMOTOR_A_Output, 0);
     analogWrite(ZMOTOR_B_Output, SRPAY_MAX_VOLTAGE);
-    encZ = MiddleMotorEnc.read();
-  }
-    
+
+    delay(spraySwitchDistance * 1); //0.872);           // This is the voltage power needed for consistent on-off positions
+
     analogWrite(ZMOTOR_A_Output, 0);
     analogWrite(ZMOTOR_B_Output, 0);
-    Serial.println(MiddleMotorEnc.read());
+
     return (1);
 }
 
@@ -42,7 +33,8 @@ void main_ZMotor(int click_status, int spin_direction, int power)
       if (released) {
         spinZMotor(Stop, power);
         break;
-      }    
+      }
+//    Serial.println(MiddleMotorEnc.read());      
     }
 }
 
@@ -58,14 +50,4 @@ void spinZMotor(int turnDirection, int power) {
        analogWrite(ZMOTOR_A_Output, 0);
        analogWrite(ZMOTOR_B_Output, 0);
    }
-}
-
-void  check_spray_status()
-{
-    if (spray_status == 1) {
-      stopSpraying();
-      Serial.print("new spray_status=");
-      Serial.println(spray_status);
-      spray_status = EEPROM.read(spray_address);
-    }
 }

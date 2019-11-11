@@ -1,9 +1,12 @@
-///////////////////////////////////////////////////////////////// MOVEMENTS ///////////////////////////////////////////////////////
+/************************** MOVEMENTS **************************
+ *  Functions for control motor to move any direction we want. *
+ ***************************************************************/
+
 /*
  *  Move the centerpiece upward with same speed for both motor
- *  @param  vol : Voltage to control the both motor speed
+ *  @param  vol : Input to control the both motor speed (fraction of 255 resulting between 0 to 24 Volts)
  */
-
+ 
 void goUp(int vol)
 {
   if (vol >= 255)
@@ -14,13 +17,14 @@ void goUp(int vol)
     analogWrite(RPWMOutputRight, vol);
     analogWrite(LPWMOutputRight, 0);
 }
+
 /*
  *  Move the centerpiece upward with differnt speed for each motor
- *  @param  volL : Voltage to control the left motor speed
- *  @param  volR : Voltage to control the right motor speed
+ *  @param  volL : Input to control the left motor speed (fraction of 255 resulting between 0 to 24 Volts)
+ *  @param  volR : Input to control the right motor speed (fraction of 255 resulting between 0 to 24 Volts)
  */
-
-void goUp_v2(int volL, int volR)
+ 
+void goUp(int volL, int volR)
 {
   if (volL >= 255)
     volL = 255;
@@ -35,9 +39,9 @@ void goUp_v2(int volL, int volR)
 
 /*
  *  Move the centerpiece downward with same speed for both motor
- *  @param  vol : Voltage to control the both motor speed
+ *  @param  vol : Input to control the both motor speed (fraction of 255 resulting between 0 to 24 Volts)
  */
-
+ 
 void goDown(int vol)
 {
   if (vol >= 255)
@@ -49,8 +53,13 @@ void goDown(int vol)
     analogWrite(LPWMOutputRight, vol);
 }
 
-// move the centerpiece upward with differnt speed for each motor
-void goDown_v2(int volL, int volR)
+/*
+ *  Move the centerpiece downward with same speed for both motor
+ *  @param  volL : Input to control the left motor speed (fraction of 255 resulting between 0 to 24 Volts)
+ *  @param  volR : Input to control the right motor speed (fraction of 255 resulting between 0 to 24 Volts)
+ */
+ 
+void goDown(int volL, int volR)
 {
   if (volL >= 255)
     volL = 255;
@@ -65,9 +74,9 @@ void goDown_v2(int volL, int volR)
 
 /*
  *  Move the centerpiece rightward with same speed for both motor
- *  @param  vol : Voltage to control the both motor speed
+ *  @param  vol : Input to control the both motor speed (fraction of 255 resulting between 0 to 24 Volts)
  */
-
+ 
 void goRight(int vol)
 {
   if (vol >= 255)
@@ -79,8 +88,13 @@ void goRight(int vol)
     analogWrite(LPWMOutputRight, 0);
 }
 
-// move the centerpiece rightward with differnt speed for each motor
-void goRight_v2(int volL, int volR)
+/*
+ *  Move the centerpiece rightward with same speed for both motor
+ *  @param  volL : Input to control the left motor speed (fraction of 255 resulting between 0 to 24 Volts)
+ *  @param  volR : Input to control the right motor speed (fraction of 255 resulting between 0 to 24 Volts)
+ */
+ 
+void goRight(int volL, int volR)
 {
   if (volL >= 255)
     volL = 255;
@@ -95,7 +109,7 @@ void goRight_v2(int volL, int volR)
 
 /*
  *  Move the centerpiece leftward with same speed for both motor
- *  @param  vol : Voltage to control the both motor speed
+ *  @param  vol : Input to control the both motor speed (fraction of 255 resulting between 0 to 24 Volts)
  */
  
 void goLeft(int vol)
@@ -109,8 +123,13 @@ void goLeft(int vol)
     analogWrite(LPWMOutputRight, vol);
 }
 
-// move the centerpiece leftward with differnt speed for each motor
-void goLeft_v2(int volL, int volR)
+/*
+ *  Move the centerpiece leftward with same speed for both motor
+ *  @param  volL : Input to control the left motor speed (fraction of 255 resulting between 0 to 24 Volts)
+ *  @param  volR : Input to control the right motor speed (fraction of 255 resulting between 0 to 24 Volts)
+ */
+ 
+void goLeft(int volL, int volR)
 {
   if (volL >= 255)
     volL = 255;
@@ -124,55 +143,67 @@ void goLeft_v2(int volL, int volR)
 }
 
 /*
- *  Move the centerpiece upward and rightward with same speed for both motor
- *  @param  vol : Voltage to control the both motor speed
+ *  Move the centerpiece upward and rightward
+ *  @param  volL : Input to control the left motor speed (fraction of 255 resulting between 0 to 24 Volts)
+ *  @param  volR : Input to control the right motor speed (fraction of 255 resulting between 0 to 24 Volts)
  */
- 
-void goUpRight(int vol)
+
+void goUpRight(int volL, int volR)
 {
-    if (vol >= 255)
-    vol = 255;
-    analogWrite(RPWMOutputRight, vol);
-    analogWrite(LPWMOutputRight, 0);
+  if (volL >= 255)
+    volL = 255;
+  if (volR >= 255)
+    volR = 255;
+    analogWrite(LPWMOutputRight, volL);
+    analogWrite(RPWMOutputRight, volR);
 }
 
 /*
- *  Move the centerpiece downward and leftward with same speed for both motor
- *  @param  vol : Voltage to control the both motor speed
+ *  Move the centerpiece downward and leftward
+ *  @param  volL : Input to control the left motor speed (fraction of 255 resulting between 0 to 24 Volts)
+ *  @param  volR : Input to control the right motor speed (fraction of 255 resulting between 0 to 24 Volts)
  */
- 
-void goDownLeft(int vol)
+
+void goDownLeft(int volL, int volR)
 {
-    if (vol >= 255)
-    vol = 255;
-    analogWrite(RPWMOutputRight, 0);
-    analogWrite(LPWMOutputRight, vol);
+  if (volL >= 255)
+    volL = 255;
+  if (volR >= 255)
+    volR = 255;
+    analogWrite(LPWMOutputRight, volL);
+    analogWrite(RPWMOutputRight, volR);
 }
 
 /*
- *  Move the centerpiece upward and leftward with same speed for both motor
- *  @param  vol : Voltage to control the both motor speed
+ *  Move the centerpiece upward and leftward
+ *  @param  volL : Input to control the left motor speed (fraction of 255 resulting between 0 to 24 Volts)
+ *  @param  volR : Input to control the right motor speed (fraction of 255 resulting between 0 to 24 Volts)
  */
- 
-void goUpLeft(int vol)
+
+void goUpLeft(int volL, int volR)
 {
-    if (vol >= 255)
-    vol = 255;
-    analogWrite(RPWMOutputLeft, 0);
-    analogWrite(LPWMOutputLeft, vol);
+  if (volL >= 255)
+    volL = 255;
+  if (volR >= 255)
+    volR = 255;
+    analogWrite(LPWMOutputRight, volL);
+    analogWrite(RPWMOutputRight, volR);
 }
 
 /*
- *  Move the centerpiece downward and rightward with same speed for both motor
- *  @param  vol : Voltage to control the both motor speed
+ *  Move the centerpiece downward and rightward
+ *  @param  volL : Input to control the left motor speed (fraction of 255 resulting between 0 to 24 Volts)
+ *  @param  volR : Input to control the right motor speed (fraction of 255 resulting between 0 to 24 Volts)
  */
- 
-void goDownRight(int vol)
+
+void goDownRight(int volL, int volR)
 {
-    if (vol >= 255)
-    vol = 255;
-    analogWrite(RPWMOutputLeft, vol);
-    analogWrite(LPWMOutputLeft, 0);
+  if (volL >= 255)
+    volL = 255;
+  if (volR >= 255)
+    volR = 255;
+    analogWrite(LPWMOutputRight, volL);
+    analogWrite(RPWMOutputRight, volR);
 }
 
 /*
@@ -221,13 +252,157 @@ void main_Moving_with_trigger(int click_status)
     spraying = true;
   }
   while (spraying == true) {
+    Serial.println(EEPROM.read(spray_address));
     if (digitalRead(SW) == 0) {
       stopSpraying();
       spraying = false;
     }
-  Serial.println(MiddleMotorEnc.read());
-
-    
+//  Serial.println("Press the switch again to move");
   }
 }
 
+/*
+ *  Move upward until both encoder values meet more than pos value.
+ *  @param  volL : Input to control the left motor speed  (fraction of 255 resulting between 0 to 24 Volts)
+ *  @param  volR : Input to control the right motor speed  (fraction of 255 resulting between 0 to 24 Volts)
+ *  @param  pos  : Encoder value we want to move.
+ */
+ 
+void moveUp(int volL, int volR, long posH)
+{
+  while (1)
+  {
+    goUp(volL, volR);
+    encoderLeft = leftMotorEnc.read();
+    encoderRight = rightMotorEnc.read();
+    if ((encoderLeft < -posH) && (encoderRight > posH))
+    {
+      doStop();
+      leftMotorEnc.write(0);
+      rightMotorEnc.write(0);
+      break ;
+    }
+  }
+  delay(10);
+}
+
+/*
+ *  Move leftward until both encoder values meet more than pos value.
+ *  @param  volL : Input to control the left motor speed  (fraction of 255 resulting between 0 to 24 Volts)
+ *  @param  volR : Input to control the right motor speed  (fraction of 255 resulting between 0 to 24 Volts)
+ *  @param  pos  : Encoder value we want to move.
+ */
+ 
+void moveLeft(int volL, int volR, long pos)
+{
+  while (1)
+  {
+    goLeft(volL, volR);
+    encoderLeft = leftMotorEnc.read();
+    encoderRight = rightMotorEnc.read();
+    if ((encoderLeft < -pos) && (encoderRight < -pos))
+    {
+      doStop();
+      leftMotorEnc.write(0);
+      rightMotorEnc.write(0);
+      break ;
+    }
+  }
+  delay(10);
+}
+
+/*
+ *  Move downward until both encoder values meet more than pos value.
+ *  @param  volL : Input to control the left motor speed  (fraction of 255 resulting between 0 to 24 Volts)
+ *  @param  volR : Input to control the right motor speed  (fraction of 255 resulting between 0 to 24 Volts)
+ *  @param  pos  : Encoder value we want to move.
+ */
+ 
+void moveDown(int volL, int volR, long posH)
+{
+  while (1)
+  {
+    goDown(volL, volR);
+    encoderLeft = leftMotorEnc.read();
+    encoderRight = rightMotorEnc.read();
+    if ((encoderLeft > posH) && (encoderRight < -posH))
+    {
+      doStop();
+      leftMotorEnc.write(0);
+      rightMotorEnc.write(0);
+      break ;
+    }
+  }
+  delay(10);
+}
+
+/*
+ *  Move rightward until both encoder values meet more than pos value.
+ *  @param  volL : Input to control the left motor speed  (fraction of 255 resulting between 0 to 24 Volts)
+ *  @param  volR : Input to control the right motor speed  (fraction of 255 resulting between 0 to 24 Volts)
+ *  @param  pos  : Encoder value we want to move.
+ */
+ 
+void moveRight(int volL, int volR, long pos)
+{
+  while (1)
+  {
+    goRight(volL, volR);
+    encoderLeft = leftMotorEnc.read();
+    encoderRight = rightMotorEnc.read();
+    if ((encoderLeft > pos) && (encoderRight > pos))
+    {
+      doStop();
+      leftMotorEnc.write(0);
+      rightMotorEnc.write(0);
+      break ;
+    }
+  }
+  delay(10);
+}
+
+/*
+ *  Move upward rightward until both encoder values meet more than pos value.
+ *  @param  volL : Input to control the right motor speed  (fraction of 255 resulting between 0 to 24 Volts)
+ *  @param  pos  : Encoder value we want to move.
+ */
+ 
+void moveUpRight(int vol, long pos)
+{
+  while (1)
+  {
+    goUpRight(0, vol);
+    encoderRight = rightMotorEnc.read();
+    if (encoderRight > pos)
+    {
+      doStop();
+      leftMotorEnc.write(0);
+      rightMotorEnc.write(0);
+      break ;
+    }
+  }
+  delay(10);
+}
+
+/*
+ *  Move downward leftward until both encoder values meet more than pos value.
+ *  @param  volL : Input to control the right motor speed  (fraction of 255 resulting between 0 to 24 Volts)
+ *  @param  pos  : Encoder value we want to move.
+ */
+ 
+void moveDownLeft(int vol, long pos)
+{
+  while (1)
+  {
+    goDownLeft(vol, 0);
+    encoderRight = rightMotorEnc.read();
+    if (encoderRight < -pos)
+    {
+      doStop();
+      leftMotorEnc.write(0);
+      rightMotorEnc.write(0);
+      break ;
+    }
+  }
+  delay(10);
+}
