@@ -12,8 +12,8 @@ const int VRx = A1; // Joystick x axis
 const int VRy = A0; // Joystick y axis
 const int SW = 13; //
 //bool swState = false;
-int readX = 500;
-int readY = 500;
+//int readX = 500;
+//int readY = 500;
 
 // Right encoder pin number
 const int encoderRightA = 20; // Green - pin 4 - Digital
@@ -33,6 +33,12 @@ const int ZMOTOR_A_Output = 6; // Arduino PWM output pin 7; connect to IBT-2 pin
 const int ZMOTOR_B_Output = 7; // Arduino PWM output pin 8; connect to IBT-2 pin 2 (LPWM)
 const int encoderMidA = 2; // White - pin 2 - Digital
 const int encoderMidB = 3; // Tan - pin 3 - Digital
+// CW gives positive encoder values
+// CCW gives negative encoder values
+
+const int spray_address = 42;
+int spray_status = EEPROM.read(spray_address);
+long MidEnc_prev = 0;
 
 int spraySwitchDistance = 600;
 
@@ -44,6 +50,10 @@ long encL = 8000L * 6;
 long encR = 6000L * 8;
 long encLprev = 0L;
 long encRprev = 0L;
+
+
+// test loop number
+int loopNum = 1;
 
 enum turnDirections {
   CW,         // Clockwise
@@ -58,7 +68,7 @@ enum joystickClickStatuses {
 
 enum mode_of_machine {
   MOVING,               // For moving centerpiece only
-  TESTING,              // For moving centerpiece and running do_square
+  SQUARE,              // For moving centerpiece and running do_square
   CALLIBRATE_ZMOTOR          // For callibrating zmotor
 };
 
@@ -101,14 +111,19 @@ void setup() {
 //    stopSpraying();
 //  }
 }
-
 void loop() {
   int turn = digitalRead(SW);
-  int mode = MOVING;
-  
+  int mode = SQUARE;
+
+// Make lines of code here:
+// If spray_status is on,
+//...activate stop_spraying
+//...EEPROM.write spray_status = off
+
   switch (mode) {
-    case TESTING:
+    case SQUARE:
     {
+//      check_spray_status();
       if (turn)
         joystick(VRx, VRy, encoderLeft, encoderRight);
       else
@@ -120,27 +135,43 @@ void loop() {
           delay(100);
           leftMotorEnc.write(0);
           rightMotorEnc.write(0);
-          square_v4(encL *  2.5, encL * 0.5);
-          Serial.print(prevL);
-          Serial.print(" - ");
-          Serial.print(prevR);
-    
+          for (int i = 0; i < loopNum; i++) {
+            square(encL *  2.5, encL * 0.5);
+
+            //Test for diagonal movement
+//            moveUpRight(200, encL * 5);
+//            moveDownLeft(200, encL * 5);
+          }
           break ;
         }
       }
       break;
     }
-    case MOVING:
-      int address = 42;
-      int value = 0;
-      Serial.println(MiddleMotorEnc.read());
-      main_Moving_with_trigger(digitalRead(SW));
-      break;
     case CALLIBRATE_ZMOTOR:
-      Serial.println(turn);
+//      check_spray_status();
+//      Serial.println(abs(MiddleMotorEnc.read()));
       main_ZMotor(digitalRead(SW), CW, SRPAY_MAX_VOLTAGE/2);
       break;
+    case MOVING:
+//      check_spray_status();
+      Serial.println(EEPROM.read(spray_address));
+      main_Moving_with_trigger(digitalRead(SW));
+      break;
     case 42:
+//      check_spray_status();
+      if (turn == 0) {
+        for (int i = 0; i < loopNum; i++) {
+          spray();
+          stopSpraying();
+        }
+      }
+//      while (turn == 0) {
+//        spray();
+//        Serial.print("Are we spraying? = ");
+//        Serial.println(EEPROM.read(spray_address));
+//        if (digitalRead(SW) == 1)
+//          break;
+//      }
       break;
   }
 }

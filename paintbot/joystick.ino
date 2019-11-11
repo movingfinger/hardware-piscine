@@ -1,12 +1,13 @@
-/*
- *  Based on joystick input value, move the centerpiece up, right, left, down.
- *  @param  VRx           : Joystick x pin number
- *  @param  VRy           : Joystick y pin number
- *  @param  encoderLeft   : Left encoder value.
- *  @param  encoderRight  : Right encoder value.
- */
+/********************************** Joystick ***********************************
+ *  Functions for control motor to move any direction we want.                 *
+ *  Based on joystick input value, move the centerpiece up, right, left, down. *
+ *  @param  VRx           : Joystick x pin number                              *
+ *  @param  VRy           : Joystick y pin number                              *
+ *  @param  VolL          : Control left motor speed                           *
+ *  @param  VolR          : Control right motor speed                          *
+ ******************************************************************************/
 
-void joystick(const int VRx, const int VRy, int encoderLeft, int encoderRight)
+void joystick(const int VRx, const int VRy, const int volL, const int volR)
 {
   int readX = 500;
   int readY = 500;
@@ -15,28 +16,28 @@ void joystick(const int VRx, const int VRy, int encoderLeft, int encoderRight)
   readY = analogRead(VRy);
   while (readX < 300)
   {
-    goRight(200, 200);
+    goRight(volL, volR);
     readX = analogRead(VRx);
     readY = analogRead(VRy);
   }
   doStop();
   while (readX > 700)
   {
-    goLeft(200, 200);
+    goLeft(volL, volR);
     readX = analogRead(VRx);
     readY = analogRead(VRy);
   }
   doStop();
   while (readY < 300)
   {
-    goUp(200, 200);
+    goUp(volL, volR);
     readX = analogRead(VRx);
     readY = analogRead(VRy);
   }
   doStop();
   while (readY > 700)
   {
-    goDown(200, 200);
+    goDown(volL, volR);
     readX = analogRead(VRx);
     readY = analogRead(VRy);
   }

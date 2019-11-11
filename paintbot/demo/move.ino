@@ -1,7 +1,4 @@
-/************************** MOVEMENTS **************************
- *  Functions for control motor to move any direction we want. *
- ***************************************************************/
-
+///////////////////////////////////////////////////////////////// MOVEMENTS ///////////////////////////////////////////////////////
 /*
  *  Move the centerpiece upward with same speed for both motor
  *  @param  vol : Input to control the both motor speed (fraction of 255 resulting between 0 to 24 Volts)
