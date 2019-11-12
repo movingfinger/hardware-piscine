@@ -29,7 +29,7 @@ void  switchControl(int mode)
     break;
   }
   case CALLIBRATE_ZMOTOR:
-    main_ZMotor(digitalRead(SW), CW, SRPAY_MAX_VOLTAGE/2);
+    main_ZMotor(digitalRead(SW), CCW, SRPAY_MAX_VOLTAGE/2);
     break;
   case MOVING:
     main_Moving_with_trigger(digitalRead(SW));
