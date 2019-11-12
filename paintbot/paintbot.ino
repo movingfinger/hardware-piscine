@@ -62,7 +62,7 @@ enum joystickClickStatuses {
 enum mode_of_machine {
   MOVING,                                            // For moving centerpiece only
   SQUARE,                                            // For moving centerpiece and running do_square
-  CALLIBRATE_ZMOTOR                                  // For callibrating zmotor
+  CALLIBRATE_ZMOTOR,                                  // For callibrating zmotor
   TEST_SPRAY                                         // For testing spray gun working
 };
 
@@ -114,7 +114,6 @@ void setup() {
  *******************************************************************/
  
 void loop() {
-  int turn = digitalRead(SW);
   int mode = SQUARE;
 
   switchControl(mode);

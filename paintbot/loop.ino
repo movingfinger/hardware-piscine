@@ -9,6 +9,7 @@
 
 void  switchControl(int mode)
 {
+  int turn = digitalRead(SW);
   switch (mode) {
   case SQUARE:
   {

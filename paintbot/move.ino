@@ -272,6 +272,9 @@ void moveUp(int volL, int volR, long posH)
 {
   while (1)
   {
+    Serial.print(leftMotorEnc.read());
+    Serial.print(" - ");
+    Serial.println(rightMotorEnc.read());
     goUp(volL, volR);
     encoderLeft = leftMotorEnc.read();
     encoderRight = rightMotorEnc.read();
@@ -297,6 +300,9 @@ void moveLeft(int volL, int volR, long pos)
 {
   while (1)
   {
+    Serial.print(leftMotorEnc.read());
+    Serial.print(" - ");
+    Serial.println(rightMotorEnc.read());
     goLeft(volL, volR);
     encoderLeft = leftMotorEnc.read();
     encoderRight = rightMotorEnc.read();
@@ -322,6 +328,9 @@ void moveDown(int volL, int volR, long posH)
 {
   while (1)
   {
+    Serial.print(leftMotorEnc.read());
+    Serial.print(" - ");
+    Serial.println(rightMotorEnc.read());
     goDown(volL, volR);
     encoderLeft = leftMotorEnc.read();
     encoderRight = rightMotorEnc.read();
@@ -347,6 +356,9 @@ void moveRight(int volL, int volR, long pos)
 {
   while (1)
   {
+    Serial.print(leftMotorEnc.read());
+    Serial.print(" - ");
+    Serial.println(rightMotorEnc.read());
     goRight(volL, volR);
     encoderLeft = leftMotorEnc.read();
     encoderRight = rightMotorEnc.read();
