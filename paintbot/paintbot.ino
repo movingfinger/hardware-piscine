@@ -9,6 +9,7 @@
  *  3. move                                                         *
  *  4. spray                                                        *
  *  5. square                                                       *
+ *  6. loop                                                         *
  *******************************************************************/
 
 /************************ (a) Variable Definition *************************
@@ -76,8 +77,8 @@ long encoderLeft = 0;
 long encoderRight = 0;
 long encoderMiddle = 0;
 bool done = false;
-long encL = 8000L * 6;
-long encR = 6000L * 8;
+long encL = 48000L;
+long encR = 48000L;
 
 // test loop number
 int loopNum = 1;
@@ -105,7 +106,7 @@ void setup() {
 }
 
 /************************ (c) Loop **********************************
- * Loop for controlling arduino. This loop consists 4  parts,       *
+ * Loop for controlling arduino. We can choose one of 4 modes,      *
  * 1. SQUARE :             moving centerpiece only                  *
  * 2. CALLIBRATE_ZMOTOR :  callibrating zmotor                      *
  * 3. MOVING :             moving centerpiece and running do_square *
@@ -116,41 +117,5 @@ void loop() {
   int turn = digitalRead(SW);
   int mode = SQUARE;
 
-  switch (mode) {
-    case SQUARE:
-    {
-      if (turn)
-        joystick(VRx, VRy, MOTOR_VOLTAGE, MOTOR_VOLTAGE);
-      else
-      {
-        while (!done)
-        {
-          leftMotorEnc.write(0);
-          rightMotorEnc.write(0);
-          delay(100);
-          leftMotorEnc.write(0);
-          rightMotorEnc.write(0);
-          for (int i = 0; i < loopNum; i++) {
-            square(encL *  2.5, encL * 0.5);
-          }
-          break ;
-        }
-      }
-      break;
-    }
-    case CALLIBRATE_ZMOTOR:
-      main_ZMotor(digitalRead(SW), CW, SRPAY_MAX_VOLTAGE/2);
-      break;
-    case MOVING:
-      main_Moving_with_trigger(digitalRead(SW));
-      break;
-    case TEST_SPRAY:
-      if (turn == 0) {
-        for (int i = 0; i < loopNum; i++) {
-          spray();
-          stopSpraying();
-        }
-      }
-      break;
-  }
+  switchControl(mode);
 }

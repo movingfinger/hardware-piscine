@@ -9,8 +9,8 @@
 
 void joystick(const int VRx, const int VRy, const int volL, const int volR)
 {
-  int readX = 500;
-  int readY = 500;
+  int readX = 500;         // Center point of Joystick X position
+  int readY = 500;         // Center point of Joystick Y position
   
   readX = analogRead(VRx);
   readY = analogRead(VRy);
