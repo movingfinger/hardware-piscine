@@ -1,14 +1,11 @@
 # Paint Bot!
 ![Paint Bot Image](https://github.com/movingfinger/hardware-piscine/blob/master/images/paintbot.png)
-One Paragraph of project description goes here
 
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
 
 ### Prerequisites
-
-What things you need to install the software and how to install them
 
 ```
 Arduino Mega 2560 Rev3 (recommended) or Arduino Uno Rev3
@@ -18,8 +15,6 @@ Any computer (Mac OS X, WINDOW, LINUX) to run Arduino IDE
 ### Installing
 
 git clone the repository or download the zip file, then go to paintbot folder
-
-Say what the step will be
 
 ```
 $ git clone https://github.com/movingfinger/hardware-piscine.git
