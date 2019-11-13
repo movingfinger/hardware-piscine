@@ -12,12 +12,12 @@ What things you need to install the software and how to install them
 
 ```
 Arduino Mega 2560 Rev3 (recommended) or Arduino Uno Rev3
-Computer (Mac OS X, WINDOW, LINUX) to run Arduino IDE
+Any computer (Mac OS X, WINDOW, LINUX) to run Arduino IDE
 ```
 
 ### Installing
 
-A step by step series of examples that tell you how to get a development env running
+git clone the repository or download the zip file, then go to paintbot folder
 
 Say what the step will be
 
