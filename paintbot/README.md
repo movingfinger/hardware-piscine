@@ -1,5 +1,5 @@
 # Paint Bot!
-  The robot can paint the wall 3 ft by 3 ft.<br/>
+  The robot can paint the wall 3 ft by 3 ft.
   <br/>
 ![Paint Bot Image](https://github.com/movingfinger/hardware-piscine/blob/master/images/paintbot.png)
 
