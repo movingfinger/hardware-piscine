@@ -1,4 +1,5 @@
 # Paint Bot!
+  Paint the wall 3 ft * 3 ft.
 ![Paint Bot Image](https://github.com/movingfinger/hardware-piscine/blob/master/images/paintbot.png)
 
 ### Prerequisites
