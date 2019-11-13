@@ -1,1 +1,0 @@
-Paint Bot Source Code
