@@ -1,5 +1,5 @@
-# Paint Bot Source Code
-
+# Paint Bot!
+![Paint Bot Image](https://github.com/movingfinger/hardware-piscine/blob/master/images/install.png)
 One Paragraph of project description goes here
 
 ## Getting Started
@@ -22,9 +22,9 @@ git clone the repository or download the zip file, then go to paintbot folder
 Say what the step will be
 
 ```
-git clone https://github.com/movingfinger/hardware-piscine.git "any folder name"
-go to "any folder name" folder
-go to paintbot folder
+$ git clone https://github.com/movingfinger/hardware-piscine.git
+$ cd hardware-piscine/
+$ cd paintbot/
 open paintbot.ino with Arduino IED.
 ```
 
