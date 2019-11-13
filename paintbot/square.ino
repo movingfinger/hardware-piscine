@@ -31,53 +31,53 @@
 void square(long pos, long posH)
 {
   while (1) {
-//  spray();
+  spray();
 
   moveLeft(190, 100, pos * 0.8);
   moveLeft(190, 100, pos * 0.35);
   moveLeft(190, 110, pos * 0.35);
   moveLeft(185, 130, pos * 0.6);
-//  stopSpraying();
+  stopSpraying();
 
   moveDown(185, 140, 0.55 * posH);
   
-//  spray();
+  spray();
 
   moveRight(120, 190, pos * 0.7);
   moveRight(110, 170, pos * 0.6);
   moveRight(140, 170, pos * 0.65);
   
-//  stopSpraying();
+  stopSpraying();
 
   moveDown(100, 180, 0.6 * posH);
   
-//  spray();
+  spray();
 
   moveLeft(175, 155, pos * 0.5);
   moveLeft(165, 150, pos * 0.7);
   moveLeft(155, 170, pos * 0.67);
   
-//  stopSpraying();
+  stopSpraying();
 
   moveDown(200, 150, 0.9 * posH);
   
-//  spray();
+  spray();
 
   moveRight(150, 170, pos * 0.7);
   moveRight(160, 160, pos * 0.5);
   moveRight(170, 145, pos * 0.4);
   
-//  stopSpraying();
+  stopSpraying();
 
   moveDown(125, 190, 0.75 * posH);
   
-//  spray();
+  spray();
 
   moveLeft(170, 165, pos * 0.5);
   moveLeft(155, 175, pos * 0.7);
   moveLeft(110, 190, pos * 0.3);
   
-//  stopSpraying();
+  stopSpraying();
 
   // Reset to origin.
 
