@@ -27,7 +27,7 @@ open paintbot.ino with Arduino IED.
 
 ## Running the tests
 
-[![Everything Is AWE(https://img.youtube.com/vi/X723J_k0E64/0.jpg)]
+[![Everything Is AWESOME](https://img.youtube.com/vi/X723J_k0E64/0.jpg)]
 (https://youtu.be/X723J_k0E64 "Everything Is AWESOME")
 
 ## Built With
