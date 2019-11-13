@@ -28,7 +28,7 @@ go to paintbot folder
 open paintbot.ino with Arduino IED.
 ```
 
-[https://github.com/movingfinger/hardware-piscine/blob/master/images/install.png]
+![installing images](https://github.com/movingfinger/hardware-piscine/blob/master/images/install.png)
 
 ## Running the tests
 
