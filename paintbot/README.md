@@ -1,7 +1,5 @@
 # Paint Bot Source Code
 
-# Project Title
-
 One Paragraph of project description goes here
 
 ## Getting Started
@@ -13,7 +11,8 @@ These instructions will get you a copy of the project up and running on your loc
 What things you need to install the software and how to install them
 
 ```
-Give examples
+Arduino Mega 2560 Rev3 (recommended) or Arduino Uno Rev3
+Computer (Mac OS X, WINDOW, LINUX) to run Arduino IDE
 ```
 
 ### Installing
