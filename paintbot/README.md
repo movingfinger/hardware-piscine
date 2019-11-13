@@ -1,5 +1,5 @@
 # Paint Bot!
-![Paint Bot Image](https://github.com/movingfinger/hardware-piscine/blob/master/images/install.png)
+![Paint Bot Image](https://github.com/movingfinger/hardware-piscine/blob/master/images/paintbot.png)
 One Paragraph of project description goes here
 
 ## Getting Started
