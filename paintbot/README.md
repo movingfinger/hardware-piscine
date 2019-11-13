@@ -22,16 +22,13 @@ git clone the repository or download the zip file, then go to paintbot folder
 Say what the step will be
 
 ```
-Give the example
+git clone https://github.com/movingfinger/hardware-piscine.git "any folder name"
+go to "any folder name" folder
+go to paintbot folder
+open paintbot.ino with Arduino IED.
 ```
 
-And repeat
-
-```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo
+[https://github.com/movingfinger/hardware-piscine/blob/master/images/install.png]
 
 ## Running the tests
 
