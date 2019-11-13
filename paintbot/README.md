@@ -25,7 +25,7 @@ open paintbot.ino with Arduino IED.
 
 ## Running the tests
 
-[![Paint Bot](http://img.youtube.com/vi/X723J_k0E64/0.jpg)](http://www.youtube.com/watch?v=X723J_k0E64 "Paint Bot")
+[![Paint Bot](https://i.ibb.co/6PTxd2F/https-i-ytimg-com-vi-X723-J-k0-E64-maxresdefault.jpg)](https://youtu.be/X723J_k0E64 "Paint Bot")
 
 ## Acknowledgments
 
